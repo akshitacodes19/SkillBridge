@@ -1,199 +1,298 @@
-# Skill Swap Platform
+# SkillBridge
 
-**Team Name:** Team 1274
-**Selected Problem Statement:** Skill Swap Platform
+# **Project:** SkillBridge – Skill Exchange Platform
 
-A modern web application that enables users to exchange skills with each other. Users can list their skills, search for others with specific skills, and request skill swaps in return.
+SkillBridge is a modern full-stack web application that allows users to **share skills, discover people with complementary skills, and exchange knowledge through skill swaps**.
 
-## Features
+Users can create profiles, list the skills they can teach, specify the skills they want to learn, discover other users, and send or manage skill-swap requests.
 
-### User Management
-- **User Registration & Authentication**: Secure JWT-based authentication
-- **Profile Management**: Users can create and edit their profiles
-- **Profile Photos**: Optional profile photo uploads
-- **Privacy Settings**: Users can make their profiles public or private
+## ✨ Features
 
-### Skill Management
-- **Skills Offered**: Users can list skills they can teach
-- **Skills Wanted**: Users can list skills they want to learn
-- **Skill Details**: Each skill includes description and proficiency/priority levels
-- **Availability**: Users can specify when they're available (weekdays, weekends, evenings, mornings)
+### 👤 User Management
 
-### Search & Discovery
-- **Browse Users**: View all public profiles
-- **Skill Search**: Search users by specific skills
-- **Location Filtering**: Filter users by location
-- **Availability Filtering**: Filter by availability preferences
+* Secure user registration and login
+* JWT-based authentication
+* Profile creation and editing
+* Optional profile photo uploads
+* Public/private profile settings
 
-### Swap Management
-- **Request Swaps**: Send skill exchange requests to other users
-- **Accept/Reject**: Recipients can accept or reject swap requests
-- **Cancel Requests**: Requesters can cancel pending requests
-- **Complete Swaps**: Mark swaps as completed after exchange
-- **Swap History**: View all past and current swaps
+### 🧠 Skill Management
 
-### Rating System
-- **Post-Swap Ratings**: Rate completed swaps (1-5 stars)
-- **Comments**: Add feedback comments to ratings
-- **User Ratings**: Build reputation through ratings
-- **Average Ratings**: Display user's average rating
+* Add skills you can teach
+* Add skills you want to learn
+* Add skill descriptions
+* Specify proficiency and priority levels
+* Set availability preferences
 
-## Tech Stack
+### 🔍 Search & Discovery
 
-### Backend
-- **Node.js** with Express.js
-- **MongoDB** with Mongoose ODM
-- **JWT** for authentication
-- **bcryptjs** for password hashing
-- **multer** for file uploads
-- **express-validator** for input validation
-- **helmet** for security headers
-- **express-rate-limit** for rate limiting
+* Browse public user profiles
+* Search users by skills
+* Filter users by location
+* Filter users by availability
+
+### 🤝 Skill Swap Management
+
+* Send skill-swap requests
+* Accept or reject requests
+* Cancel pending requests
+* Mark completed swaps
+* View swap history
+
+### ⭐ Rating System
+
+* Rate completed skill swaps
+* Add feedback comments
+* Build user reputation
+* Display average ratings
+
+---
+
+## 🛠️ Tech Stack
 
 ### Frontend
-- **React.js** with functional components and hooks
-- **React Router** for navigation
-- **Axios** for API calls
-- **React Hook Form** for form management
-- **React Hot Toast** for notifications
-- **Lucide React** for icons
-- **Tailwind CSS** for styling
 
-## Project Structure
+* React.js
+* React Router
+* Axios
+* React Hook Form
+* React Hot Toast
+* Lucide React
+* Tailwind CSS
 
-```
-skillswap/
-├── server/                 # Backend API
-│   ├── models/            # MongoDB schemas
-│   ├── routes/            # API routes
-│   ├── middleware/        # Custom middleware
-│   ├── uploads/           # File uploads
-│   └── index.js           # Server entry point
-├── client/                # Frontend React app
+### Backend
+
+* Node.js
+* Express.js
+* MongoDB
+* Mongoose
+* JWT Authentication
+* bcryptjs
+* Multer
+* Express Validator
+* Helmet
+* Express Rate Limit
+
+---
+
+## 📁 Project Structure
+
+```text
+SkillBridge/
+├── server/
+│   ├── models/
+│   ├── routes/
+│   ├── middleware/
+│   ├── index.js
+│   ├── .env-template
+│   └── package.json
+│
+├── client/
+│   ├── public/
 │   ├── src/
-│   │   ├── components/    # Reusable components
-│   │   ├── pages/         # Page components
-│   │   ├── contexts/      # React contexts
-│   │   └── index.js       # App entry point
-│   └── public/            # Static files
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── contexts/
+│   │   └── index.js
+│   └── package.json
+│
+├── package.json
+├── .gitignore
 └── README.md
 ```
 
-## Getting Started
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (v14 or higher)
-- MongoDB (local or cloud instance)
-- npm or yarn
 
-### Installation
+Make sure you have installed:
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd skillswap
-   ```
+* [Node.js](https://nodejs.org/)
+* npm
+* MongoDB Atlas account
 
-2. **Install dependencies**
-   ```bash
-   # Install root dependencies
-   npm install
-   
-   # Install backend dependencies
-   cd server
-   npm install
-   
-   # Install frontend dependencies
-   cd ../client
-   npm install
-   ```
+### 1. Clone the repository
 
-3. **Environment Setup**
-   
-   Copy the template file and customize it with your settings:
-   ```bash
-   cd server
-   cp .env-template .env
-   ```
-   
-   Then edit the `.env` file with your MongoDB Atlas connection string:
-   ```env
-   MONGODB_URI=mongodb+srv://your-username:your-password@your-cluster.mongodb.net/skillswap?retryWrites=true&w=majority
-   JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-   PORT=5000
-   NODE_ENV=development
-   ```
+```bash
+git clone <your-github-repository-url>
+cd SkillBridge
+```
 
-4. **Start MongoDB**
-   
-   Make sure MongoDB is running on your system or use a cloud instance.
+### 2. Install dependencies
 
-5. **Run the application**
-   
-   From the root directory:
-   ```bash
-   # Start both frontend and backend
-   npm run dev
-   
-   # Or start them separately:
-   npm run server  # Backend on port 5000
-   npm run client  # Frontend on port 3000
-   ```
+Install the root dependencies:
 
-### Development Scripts
+```bash
+npm install
+```
 
-- `npm run dev` - Start both frontend and backend in development mode
-- `npm run server` - Start only the backend server
-- `npm run client` - Start only the frontend development server
-- `npm run build` - Build the frontend for production
-- `npm run install-all` - Install dependencies for all packages
+Install backend dependencies:
 
-## API Endpoints
+```bash
+cd server
+npm install
+```
+
+Install frontend dependencies:
+
+```bash
+cd ../client
+npm install
+```
+
+### 3. Configure environment variables
+
+Create a `.env` file inside the `server` folder.
+
+Use `.env-template` as a reference.
+
+```env
+MONGODB_URI=your-mongodb-atlas-connection-string
+JWT_SECRET=your-secret-key
+PORT=5000
+NODE_ENV=development
+```
+
+> **Important:** Never commit your `.env` file to GitHub.
+
+### 4. Run the application
+
+Start the backend from the project root:
+
+```bash
+npm start
+```
+
+The backend runs on:
+
+```text
+http://localhost:5000
+```
+
+In another terminal, start the frontend:
+
+```bash
+cd client
+npm start
+```
+
+The frontend runs on:
+
+```text
+http://localhost:3000
+```
+
+---
+
+## 🔄 Application Flow
+
+```text
+Register / Login
+       ↓
+Complete Profile
+       ↓
+Add Skills Offered & Wanted
+       ↓
+Browse / Search Users
+       ↓
+Send Skill Swap Request
+       ↓
+Accept / Reject Request
+       ↓
+Complete Skill Swap
+       ↓
+Rate & Review
+```
+
+---
+
+## 🔐 Security
+
+SkillBridge uses:
+
+* JWT authentication
+* Password hashing with bcryptjs
+* Input validation
+* Helmet security headers
+* Rate limiting
+* Environment variables for sensitive configuration
+
+---
+
+## 📌 API Overview
 
 ### Authentication
-- `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - Login user
-- `GET /api/auth/me` - Get current user
+
+```text
+POST /api/auth/register
+POST /api/auth/login
+GET  /api/auth/me
+```
 
 ### Users
-- `GET /api/users/browse` - Browse public users
-- `GET /api/users/search` - Search users by skills
-- `GET /api/users/:id` - Get user profile
-- `PUT /api/users/profile` - Update user profile
-- `POST /api/users/profile-photo` - Upload profile photo
-- `POST /api/users/skills-offered` - Add skill offered
-- `POST /api/users/skills-wanted` - Add skill wanted
-- `DELETE /api/users/skills-offered/:id` - Remove skill offered
-- `DELETE /api/users/skills-wanted/:id` - Remove skill wanted
 
-### Swaps
-- `POST /api/swaps` - Create swap request
-- `GET /api/swaps/my-swaps` - Get user's swaps
-- `GET /api/swaps/:id` - Get swap details
-- `PUT /api/swaps/:id/accept` - Accept swap request
-- `PUT /api/swaps/:id/reject` - Reject swap request
-- `PUT /api/swaps/:id/complete` - Complete swap
-- `PUT /api/swaps/:id/cancel` - Cancel swap request
-- `POST /api/swaps/:id/rate` - Rate completed swap
+```text
+GET    /api/users/browse
+GET    /api/users/search
+GET    /api/users/:id
+PUT    /api/users/profile
+POST   /api/users/profile-photo
+POST   /api/users/skills-offered
+POST   /api/users/skills-wanted
+DELETE /api/users/skills-offered/:id
+DELETE /api/users/skills-wanted/:id
+```
+
+### Skill Swaps
+
+```text
+POST /api/swaps
+GET  /api/swaps/my-swaps
+GET  /api/swaps/:id
+PUT  /api/swaps/:id/accept
+PUT  /api/swaps/:id/reject
+PUT  /api/swaps/:id/complete
+PUT  /api/swaps/:id/cancel
+POST /api/swaps/:id/rate
+```
 
 ### Skills
-- `GET /api/skills/popular` - Get popular skills
-- `GET /api/skills/suggestions` - Get skill suggestions
 
-## Usage
+```text
+GET /api/skills/popular
+GET /api/skills/suggestions
+```
 
-1. **Register/Login**: Create an account or sign in
-2. **Complete Profile**: Add your skills, availability, and bio
-3. **Browse Users**: Search for people with skills you want to learn
-4. **Request Swaps**: Send skill exchange requests
-5. **Manage Requests**: Accept, reject, or cancel swap requests
-6. **Complete Swaps**: Mark swaps as completed after exchange
-7. **Rate & Review**: Provide feedback after completing swaps
+---
 
-## Contributing
+## 🎯 Use Case
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request 
+SkillBridge helps people learn from one another without requiring traditional paid courses.
+
+For example:
+
+> A user who knows Python can connect with someone who knows Java and exchange their knowledge through a skill swap.
+
+This creates a community-driven environment where users can **teach what they know and learn what they need**.
+
+---
+
+## 📈 Future Improvements
+
+Possible future enhancements include:
+
+* Real-time chat between matched users
+* Notifications
+* Advanced recommendation system
+* AI-powered skill matching
+* Video meeting integration
+* Achievement and badge system
+* Improved analytics dashboard
+
+---
+
+## 📄 License
+
+This project is intended for educational and portfolio purposes.

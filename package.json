@@ -1,5 +1,5 @@
 {
-  "name": "skill-swap-platform",
+  "name": "skillbridge-platform",
   "version": "1.0.0",
   "description": "A platform for users to exchange skills with each other",
   "main": "server/index.js",

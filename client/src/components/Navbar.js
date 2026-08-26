@@ -57,7 +57,7 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto flex items-center justify-between px-8 py-3">
         {/* Logo */}
         <div className="flex items-center">
-          <span className={`text-2xl font-extrabold tracking-tight ${navLogo}`}>SkillSwap</span>
+          <span className={`text-2xl font-extrabold tracking-tight ${navLogo}`}>SkillBridge</span>
         </div>
         {/* Centered Nav Links */}
         <div className="flex-1 flex justify-center">
