@@ -14,14 +14,16 @@ import AdminPanel from './pages/AdminPanel';
 import LoadingSpinner from './components/LoadingSpinner';
 import AdminLogin from './pages/AdminLogin';
 import Footer from './components/Footer';
+import SmartMatches from './pages/smartmatches';
+import CycleMatches from './pages/CycleMatches';
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
-  
+
   if (loading) {
     return <LoadingSpinner />;
   }
-  
+
   return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
@@ -39,7 +41,7 @@ function App() {
 
   useEffect(() => {
     const path = location.pathname;
-    document.body.classList.remove('browse-page','login-page','register-page','profile-page','swaps-page','userprofile-page','swapdetail-page');
+    document.body.classList.remove('browse-page', 'login-page', 'register-page', 'profile-page', 'swaps-page', 'userprofile-page', 'swapdetail-page');
     if (path === '/browse') document.body.classList.add('browse-page');
     else if (path === '/login') document.body.classList.add('login-page');
     else if (path === '/register') document.body.classList.add('register-page');
@@ -67,38 +69,54 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/browse" element={<Browse />} />
           <Route path="/user/:id" element={<UserProfile />} />
-          <Route 
-            path="/profile" 
+          <Route
+            path="/profile"
             element={
               <PrivateRoute>
                 <Profile />
               </PrivateRoute>
-            } 
+            }
           />
-          <Route 
-            path="/swaps" 
+          <Route
+            path="/smart-matches"
+            element={
+              <PrivateRoute>
+                <SmartMatches />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/cycle-matches"
+            element={
+              <PrivateRoute>
+                <CycleMatches />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/swaps"
             element={
               <PrivateRoute>
                 <Swaps />
               </PrivateRoute>
-            } 
+            }
           />
-          <Route 
-            path="/swaps/:id" 
+          <Route
+            path="/swaps/:id"
             element={
               <PrivateRoute>
                 <SwapDetail />
               </PrivateRoute>
-            } 
+            }
           />
           <Route path="/admin/login" element={<AdminLogin />} />
-          <Route 
-            path="/admin" 
+          <Route
+            path="/admin"
             element={
               <AdminRoute>
                 <AdminPanel />
               </AdminRoute>
-            } 
+            }
           />
         </Routes>
       </main>

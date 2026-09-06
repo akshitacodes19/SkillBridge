@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { 
-  User, 
-  Search, 
-  LogOut, 
+import {
+  User,
+  Search,
+  LogOut,
   Users,
   Moon,
   Sun,
@@ -53,18 +53,47 @@ const Navbar = () => {
   const navLogo = isHome ? 'text-white' : 'text-brand-plum';
 
   return (
-    <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${navBg}`} style={{backdropFilter: isHome ? undefined : 'blur(8px)'}}>
+    <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${navBg}`} style={{ backdropFilter: isHome ? undefined : 'blur(8px)' }}>
       <div className="max-w-7xl mx-auto flex items-center justify-between px-8 py-3">
         {/* Logo */}
         <div className="flex items-center">
           <span className={`text-2xl font-extrabold tracking-tight ${navLogo}`}>SkillBridge</span>
         </div>
         {/* Centered Nav Links */}
+        {/* Centered Nav Links */}
         <div className="flex-1 flex justify-center">
           <div className={`flex space-x-10 text-lg font-medium ${navText}`}>
-            <Link to="/" className={`${navAccent} transition-colors`}>Home</Link>
-            <Link to="/browse" className={`${navAccent} transition-colors`}>Browse</Link>
-            <Link to="/swaps" className={`${navAccent} transition-colors`}>My Swap Requests</Link>
+
+            <Link to="/" className={`${navAccent} transition-colors`}>
+              Home
+            </Link>
+
+            <Link to="/browse" className={`${navAccent} transition-colors`}>
+              Browse
+            </Link>
+
+            <Link to="/swaps" className={`${navAccent} transition-colors`}>
+              My Swap Requests
+            </Link>
+
+            {isAuthenticated && (
+              <Link
+                to="/smart-matches"
+                className={`${navAccent} transition-colors`}
+              >
+                Smart Matches
+              </Link>
+            )}
+
+            {isAuthenticated && (
+              <Link
+                to="/cycle-matches"
+                className={`${navAccent} transition-colors`}
+              >
+                Multi-way Matches
+              </Link>
+            )}
+
           </div>
         </div>
         {/* Right: Login or Profile */}
