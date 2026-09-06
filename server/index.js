@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const http = require('http');
+const { Server } = require('socket.io');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -11,9 +13,18 @@ const swapRoutes = require('./routes/swaps');
 const skillRoutes = require('./routes/skills');
 const matchingRoutes = require('./routes/matching');
 const cyclesRoutes = require('./routes/cycles');
+const chatRoutes = require('./routes/chat');
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
+
+const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST']
+  }
+});
 
 // Fix: Trust proxy for rate limiting (prevents X-Forwarded-For warning)
 app.set('trust proxy', 1);
@@ -43,6 +54,30 @@ app.use('/api/swaps', swapRoutes);
 app.use('/api/skills', skillRoutes);
 app.use('/api/matching', matchingRoutes);
 app.use('/api/cycles', cyclesRoutes);
+app.use('/api/chat', chatRoutes);
+
+// Socket.IO
+io.on('connection', (socket) => {
+  console.log('User connected to chat:', socket.id);
+
+  socket.on('joinSwap', (swapId) => {
+    socket.join(`swap-${swapId}`);
+    console.log(`Socket ${socket.id} joined swap-${swapId}`);
+  });
+
+  socket.on('sendMessage', (data) => {
+    const { swapId, message } = data;
+
+    socket.to(`swap-${swapId}`).emit('newMessage', {
+      message,
+      sender: 'other'
+    });
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected from chat:', socket.id);
+  });
+});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -62,12 +97,12 @@ app.use('*', (req, res) => {
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/skillswap')
-.then(() => {
-  console.log('Connected to MongoDB');
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-})
-.catch((err) => {
-  console.error('MongoDB connection error:', err);
-}); 
+  .then(() => {
+    console.log('Connected to MongoDB');
+    server.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('MongoDB connection error:', err);
+  }); 

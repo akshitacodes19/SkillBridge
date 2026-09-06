@@ -2,11 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../config/api';
 import toast from 'react-hot-toast';
-import { 
-  Clock, 
-  Check, 
-  X, 
-  Star, 
+import {
+  Clock,
+  Check,
+  X,
+  Star,
   MessageSquare,
   Calendar,
   User,
@@ -118,7 +118,7 @@ const Swaps = () => {
       completed: { color: 'badge-primary', text: 'Completed' },
       cancelled: { color: 'badge-secondary', text: 'Cancelled' }
     };
-    
+
     const config = statusConfig[status] || { color: 'badge-secondary', text: status };
     return <span className={`badge ${config.color}`}>{config.text}</span>;
   };
@@ -171,11 +171,10 @@ const Swaps = () => {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`flex-1 py-3 px-6 rounded-lg text-md font-semibold transition-colors ${
-              activeTab === tab.key
+            className={`flex-1 py-3 px-6 rounded-lg text-md font-semibold transition-colors ${activeTab === tab.key
                 ? 'bg-white text-[#7B466A] shadow'
                 : 'text-[#7B466A] hover:text-[#0C0420]'
-            }`}
+              }`}
           >
             {tab.label}
           </button>
@@ -188,7 +187,7 @@ const Swaps = () => {
           <div className="text-center py-16">
             <p className="text-[#5D3C64] text-xl font-semibold mb-2">No swaps found</p>
             <p className="text-[#9F6496] mb-4">
-              {activeTab === 'all' 
+              {activeTab === 'all'
                 ? "You haven't made any swap requests yet"
                 : `No ${activeTab} swaps found`
               }
@@ -288,12 +287,22 @@ const Swaps = () => {
                   </>
                 )}
                 {swap.status === 'accepted' && (
-                  <button
-                    onClick={() => handleComplete(swap._id)}
-                    className="px-5 py-2 rounded-lg bg-[#7B466A] text-white font-bold shadow hover:bg-[#5D3C64] transition-colors text-md"
-                  >
-                    Mark as Completed
-                  </button>
+                  <>
+                    <Link
+                      to={`/chat/${swap._id}`}
+                      className="px-5 py-2 rounded-lg bg-blue-600 text-white font-bold shadow hover:bg-blue-700 transition-colors text-md flex items-center gap-2 justify-center"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      Open Chat
+                    </Link>
+
+                    <button
+                      onClick={() => handleComplete(swap._id)}
+                      className="px-5 py-2 rounded-lg bg-[#7B466A] text-white font-bold shadow hover:bg-[#5D3C64] transition-colors text-md"
+                    >
+                      Mark as Completed
+                    </button>
+                  </>
                 )}
                 {swap.status === 'completed' && (
                   <>
@@ -307,10 +316,10 @@ const Swaps = () => {
                         </span>
                         {((swap.requester._id === currentUser._id && swap.requesterRating?.comment) ||
                           (swap.recipient._id === currentUser._id && swap.recipientRating?.comment)) && (
-                          <span className="text-xs text-gray-700 italic mt-1 max-w-[160px] text-right">
-                            "{swap.requester._id === currentUser._id ? swap.requesterRating.comment : swap.recipientRating.comment}"
-                          </span>
-                        )}
+                            <span className="text-xs text-gray-700 italic mt-1 max-w-[160px] text-right">
+                              "{swap.requester._id === currentUser._id ? swap.requesterRating.comment : swap.recipientRating.comment}"
+                            </span>
+                          )}
                       </div>
                     ) : (
                       <button
@@ -340,7 +349,7 @@ const Swaps = () => {
               <div>
                 <label className="block text-purple-800 font-semibold mb-1">Rating</label>
                 <div className="flex gap-1">
-                  {[1,2,3,4,5].map(star => (
+                  {[1, 2, 3, 4, 5].map(star => (
                     <button
                       key={star}
                       type="button"

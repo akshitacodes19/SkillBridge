@@ -16,6 +16,7 @@ import AdminLogin from './pages/AdminLogin';
 import Footer from './components/Footer';
 import SmartMatches from './pages/smartmatches';
 import CycleMatches from './pages/CycleMatches';
+import Chat from './pages/Chat';
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -90,6 +91,14 @@ function App() {
             element={
               <PrivateRoute>
                 <CycleMatches />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/chat/:swapId"
+            element={
+              <PrivateRoute>
+                <Chat />
               </PrivateRoute>
             }
           />
