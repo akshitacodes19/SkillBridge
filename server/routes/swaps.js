@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const Swap = require('../models/Swap');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
+const { requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -335,6 +336,23 @@ router.post('/:id/rate', auth, [
   } catch (error) {
     console.error('Rate swap error:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Admin: Get all skill swaps
+router.get('/admin/all', auth, requireAdmin, async (req, res) => {
+  try {
+    const swaps = await Swap.find()
+      .populate('requester', 'name email profilePhoto')
+      .populate('recipient', 'name email profilePhoto')
+      .sort({ createdAt: -1 });
+
+    res.json(swaps);
+  } catch (error) {
+    console.error('Admin get swaps error:', error);
+    res.status(500).json({
+      message: 'Failed to fetch skill swaps'
+    });
   }
 });
 

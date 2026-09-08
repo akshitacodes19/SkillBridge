@@ -14,6 +14,7 @@ const skillRoutes = require('./routes/skills');
 const matchingRoutes = require('./routes/matching');
 const cyclesRoutes = require('./routes/cycles');
 const chatRoutes = require('./routes/chat');
+const platformMessageRoutes = require('./routes/platformMessages');
 
 const app = express();
 const server = http.createServer(app);
@@ -55,6 +56,7 @@ app.use('/api/skills', skillRoutes);
 app.use('/api/matching', matchingRoutes);
 app.use('/api/cycles', cyclesRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/platform-messages', platformMessageRoutes);
 
 // Socket.IO
 io.on('connection', (socket) => {

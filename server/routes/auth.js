@@ -104,8 +104,15 @@ router.post('/login', [
 
     // Check if user exists
     const user = await User.findOne({ email });
+
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    if (user.isBanned) {
+      return res.status(403).json({
+        message: 'Your account has been banned by the administrator.'
+      });
     }
 
     // Check password

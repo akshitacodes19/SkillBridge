@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
+const Swap = require('../models/Swap');
 const auth = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/auth');
 
@@ -31,7 +32,7 @@ const upload = multer({
     const allowedTypes = /jpeg|jpg|png|gif/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype);
-    
+
     if (mimetype && extname) {
       return cb(null, true);
     } else {
@@ -51,6 +52,131 @@ router.get('/all', auth, requireAdmin, async (req, res) => {
   } catch (error) {
     console.error('Get all users error:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Admin: Get dashboard statistics
+router.get('/stats', auth, requireAdmin, async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+
+    const activeUsers = await User.countDocuments({
+      isBanned: { $ne: true }
+    });
+
+    const bannedUsers = await User.countDocuments({
+      isBanned: true
+    });
+
+    const users = await User.find(
+      {},
+      'skillsOffered skillsWanted ratings'
+    );
+
+    let totalSkills = 0;
+    let totalRatings = 0;
+    let ratingSum = 0;
+
+    users.forEach(user => {
+      totalSkills += user.skillsOffered?.length || 0;
+      totalSkills += user.skillsWanted?.length || 0;
+
+      if (user.ratings?.length) {
+        user.ratings.forEach(rating => {
+          ratingSum += rating.rating;
+          totalRatings++;
+        });
+      }
+    });
+
+    const totalSkillSwaps = await Swap.countDocuments();
+
+    const averageUserRating =
+      totalRatings > 0 ? ratingSum / totalRatings : 0;
+
+    res.json({
+      totalUsers,
+      activeUsers,
+      bannedUsers,
+      totalSkills,
+      totalSkillSwaps,
+      averageUserRating: Number(averageUserRating.toFixed(2))
+    });
+
+  } catch (error) {
+    console.error('Dashboard stats error:', error);
+
+    res.status(500).json({
+      message: 'Failed to fetch dashboard statistics'
+    });
+  }
+});
+
+// Admin: Ban a user
+router.put('/:userId/ban', auth, requireAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Prevent banning admin
+    if (userId === 'admin') {
+      return res.status(400).json({
+        message: 'Admin account cannot be banned'
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { isBanned: true },
+      { new: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        message: 'User not found'
+      });
+    }
+
+    res.json({
+      message: 'User banned successfully',
+      user
+    });
+
+  } catch (error) {
+    console.error('Ban user error:', error);
+    res.status(500).json({
+      message: 'Failed to ban user'
+    });
+  }
+});
+
+
+// Admin: Unban a user
+router.put('/:userId/unban', auth, requireAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { isBanned: false },
+      { new: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        message: 'User not found'
+      });
+    }
+
+    res.json({
+      message: 'User unbanned successfully',
+      user
+    });
+
+  } catch (error) {
+    console.error('Unban user error:', error);
+    res.status(500).json({
+      message: 'Failed to unban user'
+    });
   }
 });
 
@@ -182,17 +308,17 @@ router.get('/:id/reviews', async (req, res) => {
   try {
     const id = req.params.id;
     const { page = 1, limit = 10, sort = 'date' } = req.query;
-    
+
     // Validate ObjectId
     if (!id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ message: 'Invalid user ID' });
     }
-    
+
     const user = await User.findById(id).select('ratings').populate('ratings.reviewer', 'name profilePhoto');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    
+
     // Sort reviews
     let sortedReviews = [...(user.ratings || [])];
     if (sort === 'date') {
@@ -200,14 +326,14 @@ router.get('/:id/reviews', async (req, res) => {
     } else if (sort === 'rating') {
       sortedReviews.sort((a, b) => b.rating - a.rating);
     }
-    
+
     // Paginate
     const pageNum = parseInt(page);
     const limitNum = parseInt(limit);
     const startIndex = (pageNum - 1) * limitNum;
     const endIndex = pageNum * limitNum;
     const paginatedReviews = sortedReviews.slice(startIndex, endIndex);
-    
+
     // Map reviews to include reviewer info
     const reviewsWithReviewer = paginatedReviews.map(r => ({
       reviewer: r.reviewer ? { _id: r.reviewer._id, name: r.reviewer.name, profilePhoto: r.reviewer.profilePhoto } : null,
@@ -215,7 +341,7 @@ router.get('/:id/reviews', async (req, res) => {
       comment: r.comment,
       date: r.date
     }));
-    
+
     res.json({
       reviews: reviewsWithReviewer,
       pagination: {
@@ -275,7 +401,7 @@ router.post('/profile-photo', auth, upload.single('photo'), async (req, res) => 
     }
 
     const photoUrl = `/uploads/${req.file.filename}`;
-    
+
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { profilePhoto: photoUrl },
@@ -303,7 +429,7 @@ router.post('/skills-offered', auth, [
 
     const { name, description, proficiency } = req.body;
     const user = await User.findById(req.user._id);
-    const skillExists = user.skillsOffered.some(skill => 
+    const skillExists = user.skillsOffered.some(skill =>
       skill.name.trim().toLowerCase() === name.trim().toLowerCase()
     );
     if (skillExists) {
@@ -332,7 +458,7 @@ router.post('/skills-wanted', auth, [
 
     const { name, description, priority } = req.body;
     const user = await User.findById(req.user._id);
-    const skillExists = user.skillsWanted.some(skill => 
+    const skillExists = user.skillsWanted.some(skill =>
       skill.name.trim().toLowerCase() === name.trim().toLowerCase()
     );
     if (skillExists) {
@@ -375,6 +501,50 @@ router.delete('/skills-wanted/:skillId', auth, async (req, res) => {
     res.json(user.skillsWanted);
   } catch (error) {
     console.error('Remove skill wanted error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Admin: Reject offered skill
+router.delete('/admin/skills-offered/:userId/:skillId', auth, requireAdmin, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.skillsOffered = user.skillsOffered.filter(
+      skill => skill._id.toString() !== req.params.skillId
+    );
+
+    await user.save();
+
+    res.json(user.skillsOffered);
+  } catch (error) {
+    console.error('Admin reject offered skill error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Admin: Reject wanted skill
+router.delete('/admin/skills-wanted/:userId/:skillId', auth, requireAdmin, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.skillsWanted = user.skillsWanted.filter(
+      skill => skill._id.toString() !== req.params.skillId
+    );
+
+    await user.save();
+
+    res.json(user.skillsWanted);
+  } catch (error) {
+    console.error('Admin reject wanted skill error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -515,23 +685,23 @@ router.put('/:userId/reviews/:reviewId/unflag', auth, requireAdmin, async (req, 
 router.get('/:id/rating-analytics', async (req, res) => {
   try {
     const id = req.params.id;
-    
+
     if (!id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ message: 'Invalid user ID' });
     }
-    
+
     const user = await User.findById(id).select('ratings');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
     const ratings = user.ratings || [];
-    
+
     // Rating distribution
     const distribution = {
       1: 0, 2: 0, 3: 0, 4: 0, 5: 0
     };
-    
+
     // Monthly trends (last 12 months)
     const monthlyTrends = {};
     const now = new Date();
@@ -544,7 +714,7 @@ router.get('/:id/rating-analytics', async (req, res) => {
     ratings.forEach(review => {
       // Distribution
       distribution[review.rating]++;
-      
+
       // Monthly trends
       const reviewDate = new Date(review.date);
       const monthKey = reviewDate.toISOString().slice(0, 7);
@@ -584,13 +754,13 @@ router.get('/:id/rating-analytics', async (req, res) => {
 router.get('/admin/rating-analytics', auth, requireAdmin, async (req, res) => {
   try {
     const users = await User.find({ 'ratings.0': { $exists: true } }).select('ratings');
-    
+
     let totalRatings = 0;
     let totalRatingSum = 0;
     const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     const monthlyTrends = {};
     const now = new Date();
-    
+
     // Initialize monthly trends
     for (let i = 11; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -603,7 +773,7 @@ router.get('/admin/rating-analytics', auth, requireAdmin, async (req, res) => {
         totalRatings++;
         totalRatingSum += review.rating;
         distribution[review.rating]++;
-        
+
         const reviewDate = new Date(review.date);
         const monthKey = reviewDate.toISOString().slice(0, 7);
         if (monthlyTrends[monthKey]) {
@@ -688,7 +858,7 @@ router.post('/:userId/reviews/:reviewId/vote', auth, [
         isHelpful,
         date: new Date()
       });
-      
+
       if (isHelpful) {
         review.helpfulCount++;
       } else {
@@ -925,16 +1095,16 @@ router.put('/:userId/reviews/:reviewId/unverify', auth, requireAdmin, async (req
 router.get('/:id/reviews/export', auth, async (req, res) => {
   try {
     const id = req.params.id;
-    
+
     // Only allow users to export their own reviews or admins
     if (id !== req.user._id.toString() && !req.user.isAdmin) {
       return res.status(403).json({ message: 'Not authorized to export these reviews' });
     }
-    
+
     if (!id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ message: 'Invalid user ID' });
     }
-    
+
     const user = await User.findById(id).select('name ratings').populate('ratings.reviewer', 'name email');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -984,11 +1154,11 @@ router.get('/:id/reviews/export', auth, async (req, res) => {
 router.get('/:id/reviews/verified', async (req, res) => {
   try {
     const id = req.params.id;
-    
+
     if (!id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ message: 'Invalid user ID' });
     }
-    
+
     const user = await User.findById(id).select('ratings').populate('ratings.reviewer', 'name profilePhoto');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });

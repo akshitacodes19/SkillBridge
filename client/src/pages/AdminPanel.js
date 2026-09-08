@@ -2,18 +2,34 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../config/api';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { User as UserIcon, MapPin, Users, Layers, MessageCircle, Flag, BarChart2 } from 'lucide-react';
+import { User as UserIcon, MapPin, Users, Layers, MessageCircle, Flag, BarChart2, Ban, UserCheck } from 'lucide-react';
 
 const summaryColors = [
-  'bg-[#5D3C64]',
   'bg-[#7B466A]',
   'bg-[#9F6496]',
-  'bg-[#D391B0]'
+  'bg-[#BA6E8F]',
+  'bg-[#D391B0]',
+  'bg-[#8E5A80]',
+  'bg-[#6F456F]'
 ];
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('skills');
   const [users, setUsers] = useState([]);
+  const [swaps, setSwaps] = useState([]);
+  const [platformMessages, setPlatformMessages] = useState([]);
+  const [messageTitle, setMessageTitle] = useState('');
+  const [messageText, setMessageText] = useState('');
+
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    activeUsers: 0,
+    bannedUsers: 0,
+    totalSkills: 0,
+    totalSkillSwaps: 0,
+    averageUserRating: 0
+  });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -21,12 +37,24 @@ const AdminPanel = () => {
 
   // Fetch all users for skill moderation
   useEffect(() => {
-    if (activeTab === 'skills') {
+    if (
+      activeTab === 'skills' ||
+      activeTab === 'users' ||
+      activeTab === 'swaps'
+    ) {
       setLoading(true);
       setError('');
-      api.get('/users/all')
+      api.get(
+        activeTab === 'swaps'
+          ? '/swaps/admin/all'
+          : '/users/all'
+      )
         .then(res => {
-          setUsers(res.data);
+          if (activeTab === 'swaps') {
+            setSwaps(res.data);
+          } else {
+            setUsers(res.data);
+          }
           setLoading(false);
         })
         .catch(err => {
@@ -34,6 +62,40 @@ const AdminPanel = () => {
           setError('Failed to fetch users. Please check your admin permissions.');
           setLoading(false);
         });
+    }
+  }, [activeTab]);
+  // Fetch dashboard statistics
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await api.get('/users/stats');
+        setStats(res.data);
+      } catch (err) {
+        console.error('Failed to fetch dashboard stats:', err);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'messages') {
+      const fetchPlatformMessages = async () => {
+        try {
+          setLoading(true);
+          setError('');
+
+          const res = await api.get('/platform-messages/admin/all');
+          setPlatformMessages(res.data);
+        } catch (err) {
+          console.error('Failed to fetch platform messages:', err);
+          setError('Failed to fetch platform messages.');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchPlatformMessages();
     }
   }, [activeTab]);
 
@@ -48,30 +110,155 @@ const AdminPanel = () => {
   const handleRejectSkill = async (userId, skillId, type) => {
     setError('');
     setSuccess('');
+
     try {
-      await api.delete(`/users/${type === 'offered' ? 'skills-offered' : 'skills-wanted'}/${skillId}`);
+      const endpoint =
+        type === 'offered'
+          ? `/users/admin/skills-offered/${userId}/${skillId}`
+          : `/users/admin/skills-wanted/${userId}/${skillId}`;
+
+      await api.delete(endpoint);
+
       setSuccess('Skill rejected successfully.');
-      // Refresh users
-      setUsers(users => users.map(u => {
-        if (u._id !== userId) return u;
-        return {
-          ...u,
-          skillsOffered: type === 'offered' ? u.skillsOffered.filter(s => s._id !== skillId) : u.skillsOffered,
-          skillsWanted: type === 'wanted' ? u.skillsWanted.filter(s => s._id !== skillId) : u.skillsWanted,
-        };
-      }));
+
+      setUsers(prevUsers =>
+        prevUsers.map(user => {
+          if (user._id !== userId) return user;
+
+          return {
+            ...user,
+            skillsOffered:
+              type === 'offered'
+                ? user.skillsOffered.filter(skill => skill._id !== skillId)
+                : user.skillsOffered,
+            skillsWanted:
+              type === 'wanted'
+                ? user.skillsWanted.filter(skill => skill._id !== skillId)
+                : user.skillsWanted
+          };
+        })
+      );
+
     } catch (err) {
       console.error('Failed to reject skill:', err);
-      setError('Failed to reject skill. Please try again.');
+      console.error('Response:', err.response?.data);
+
+      setError(
+        err.response?.data?.message ||
+        'Failed to reject skill. Please try again.'
+      );
+    }
+  };
+  const handleBanUser = async (userId) => {
+    try {
+      await api.put(`/users/${userId}/ban`);
+
+      setUsers(prevUsers =>
+        prevUsers.map(user =>
+          user._id === userId
+            ? { ...user, isBanned: true }
+            : user
+        )
+      );
+
+      setSuccess('User banned successfully');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error) {
+      console.error('Ban user error:', error);
+      setError(error.response?.data?.message || 'Failed to ban user');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
+  const handleUnbanUser = async (userId) => {
+    try {
+      await api.put(`/users/${userId}/unban`);
+
+      setUsers(prevUsers =>
+        prevUsers.map(user =>
+          user._id === userId
+            ? { ...user, isBanned: false }
+            : user
+        )
+      );
+
+      setSuccess('User unbanned successfully');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error) {
+      console.error('Unban user error:', error);
+      setError(error.response?.data?.message || 'Failed to unban user');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
+  const handleSendPlatformMessage = async (e) => {
+    e.preventDefault();
+
+    setError('');
+    setSuccess('');
+
+    if (!messageTitle.trim() || !messageText.trim()) {
+      setError('Please enter both a title and message.');
+      return;
+    }
+
+    try {
+      const res = await api.post('/platform-messages/admin', {
+        title: messageTitle,
+        message: messageText
+      });
+
+      setPlatformMessages(prevMessages => [
+        res.data,
+        ...prevMessages
+      ]);
+
+      setMessageTitle('');
+      setMessageText('');
+
+      setSuccess('Platform message sent successfully.');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      console.error('Failed to send platform message:', err);
+      setError(
+        err.response?.data?.message ||
+        'Failed to send platform message.'
+      );
     }
   };
 
   // Dashboard summary data (mocked for now)
   const summary = [
-    { label: 'Users', value: users.length, icon: <Users className="w-6 h-6" /> },
-    { label: 'Skills Offered', value: users.reduce((acc, u) => acc + (u.skillsOffered?.length || 0), 0), icon: <Layers className="w-6 h-6" /> },
-    { label: 'Skills Wanted', value: users.reduce((acc, u) => acc + (u.skillsWanted?.length || 0), 0), icon: <BarChart2 className="w-6 h-6" /> },
-    { label: 'Reports', value: 0, icon: <Flag className="w-6 h-6" /> },
+    {
+      label: 'Total Users',
+      value: stats.totalUsers,
+      icon: <Users className="w-6 h-6" />
+    },
+    {
+      label: 'Active Users',
+      value: stats.activeUsers,
+      icon: <UserCheck className="w-6 h-6" />
+    },
+    {
+      label: 'Banned Users',
+      value: stats.bannedUsers,
+      icon: <Ban className="w-6 h-6" />
+    },
+    {
+      label: 'Total Skills',
+      value: stats.totalSkills,
+      icon: <Layers className="w-6 h-6" />
+    },
+    {
+      label: 'Total Skill Swaps',
+      value: stats.totalSkillSwaps,
+      icon: <MessageCircle className="w-6 h-6" />
+    },
+    {
+      label: 'Average User Rating',
+      value: `${stats.averageUserRating}/5`,
+      icon: <BarChart2 className="w-6 h-6" />
+    }
   ];
 
   return (
@@ -184,23 +371,289 @@ const AdminPanel = () => {
           )}
           {activeTab === 'users' && (
             <div className="max-h-[60vh] overflow-y-auto pr-2">
-              <h2 className="text-2xl font-bold mb-4 text-[#5D3C64]">User Management</h2>
-              <p className="text-[#7B466A] mb-4">Ban users, view user details, and manage user accounts here.</p>
-              {/* User management content goes here */}
+              <h2 className="text-2xl font-bold mb-2 text-[#5D3C64]">
+                User Management
+              </h2>
+
+              <p className="text-[#7B466A] mb-6">
+                Ban users, view user details, and manage user accounts here.
+              </p>
+
+              {users
+                .filter(user => user._id !== 'admin')
+                .map(user => (
+                  <div
+                    key={user._id}
+                    className="w-full bg-white rounded-2xl shadow-lg border-2 border-[#D391B0] p-6 mb-5"
+                  >
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+
+                      {/* User information */}
+                      <div className="flex items-center gap-4">
+
+                        {user.profilePhoto ? (
+                          <img
+                            src={user.profilePhoto}
+                            alt={user.name}
+                            className="w-20 h-20 rounded-full object-cover border-4 border-[#7B466A]"
+                          />
+                        ) : (
+                          <div className="w-20 h-20 bg-[#7B466A] rounded-full flex items-center justify-center text-white">
+                            <UserIcon className="w-10 h-10" />
+                          </div>
+                        )}
+
+                        <div>
+                          <h3 className="text-xl font-bold text-[#0C0420]">
+                            {user.name}
+                          </h3>
+
+                          <p className="text-gray-600">
+                            {user.email}
+                          </p>
+
+                          {user.location && (
+                            <p className="flex items-center gap-1 text-[#7B466A] mt-1">
+                              <MapPin className="w-4 h-4" />
+                              {user.location}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Status and buttons */}
+                      <div className="flex items-center gap-3">
+
+                        {user.isBanned ? (
+                          <>
+                            <span className="px-3 py-2 rounded-full bg-red-100 text-red-700 font-semibold">
+                              Banned
+                            </span>
+
+                            <button
+                              onClick={() => handleUnbanUser(user._id)}
+                              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+                            >
+                              <UserCheck className="w-4 h-4" />
+                              Unban
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <span className="px-3 py-2 rounded-full bg-green-100 text-green-700 font-semibold">
+                              Active
+                            </span>
+
+                            <button
+                              onClick={() => {
+                                if (
+                                  window.confirm(
+                                    `Are you sure you want to ban ${user.name}?`
+                                  )
+                                ) {
+                                  handleBanUser(user._id);
+                                }
+                              }}
+                              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition"
+                            >
+                              <Ban className="w-4 h-4" />
+                              Ban User
+                            </button>
+                          </>
+                        )}
+
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+              {users.filter(user => user._id !== 'admin').length === 0 && (
+                <div className="text-gray-400">
+                  No users found.
+                </div>
+              )}
             </div>
           )}
           {activeTab === 'swaps' && (
             <div className="max-h-[60vh] overflow-y-auto pr-2">
-              <h2 className="text-2xl font-bold mb-4 text-[#5D3C64]">Swap Monitoring</h2>
-              <p className="text-[#7B466A] mb-4">Monitor all swaps (pending, accepted, cancelled) here.</p>
-              {/* Swap monitoring content goes here */}
+              <h2 className="text-2xl font-bold mb-4 text-[#5D3C64]">
+                Swap Monitoring
+              </h2>
+
+              <p className="text-[#7B466A] mb-6">
+                Monitor all skill swaps and their current status here.
+              </p>
+
+              {loading ? (
+                <LoadingSpinner />
+              ) : swaps.length === 0 ? (
+                <div className="text-gray-400">
+                  No skill swaps found.
+                </div>
+              ) : (
+                <div className="space-y-5">
+                  {swaps.map(swap => (
+                    <div
+                      key={swap._id}
+                      className="bg-white rounded-2xl shadow-lg border-2 border-[#D391B0] p-6"
+                    >
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+
+                        <div>
+                          <h3 className="text-lg font-bold text-[#0C0420]">
+                            {swap.requester?.name || 'Unknown User'}
+                            {' → '}
+                            {swap.recipient?.name || 'Unknown User'}
+                          </h3>
+
+                          <p className="text-gray-600 mt-1">
+                            Offered: {swap.offeredSkill?.name || 'N/A'}
+                          </p>
+
+                          <p className="text-gray-600">
+                            Requested: {swap.requestedSkill?.name || 'N/A'}
+                          </p>
+                        </div>
+
+                        <span
+                          className={`px-4 py-2 rounded-full font-semibold capitalize ${swap.status === 'pending'
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : swap.status === 'accepted'
+                              ? 'bg-blue-100 text-blue-700'
+                              : swap.status === 'completed'
+                                ? 'bg-green-100 text-green-700'
+                                : swap.status === 'rejected'
+                                  ? 'bg-red-100 text-red-700'
+                                  : 'bg-gray-100 text-gray-700'
+                            }`}
+                        >
+                          {swap.status}
+                        </span>
+
+                      </div>
+
+                      {swap.message && (
+                        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                          <p className="text-sm text-gray-500">Message</p>
+                          <p className="text-gray-700 mt-1">
+                            {swap.message}
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="mt-4 text-sm text-gray-500">
+                        Created: {new Date(swap.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
           {activeTab === 'messages' && (
             <div className="max-h-[60vh] overflow-y-auto pr-2">
-              <h2 className="text-2xl font-bold mb-4 text-[#5D3C64]">Platform Messages</h2>
-              <p className="text-[#7B466A] mb-4">Send platform-wide messages and alerts here.</p>
-              {/* Platform messages content goes here */}
+              <h2 className="text-2xl font-bold mb-4 text-[#5D3C64]">
+                Platform Messages
+              </h2>
+
+              <p className="text-[#7B466A] mb-6">
+                Send platform-wide messages and alerts to all users.
+              </p>
+
+              {error && (
+                <div className="text-red-600 mb-4 font-semibold bg-red-50 border border-red-200 rounded-lg px-4 py-2 shadow">
+                  {error}
+                </div>
+              )}
+
+              {success && (
+                <div className="text-green-600 mb-4 font-semibold bg-green-50 border border-green-200 rounded-lg px-4 py-2 shadow">
+                  {success}
+                </div>
+              )}
+
+              {/* Send Message Form */}
+              <form
+                onSubmit={handleSendPlatformMessage}
+                className="bg-[#F8F6FA] border-2 border-[#D391B0] rounded-2xl p-6 mb-8"
+              >
+                <h3 className="text-xl font-bold text-[#5D3C64] mb-4">
+                  Create New Message
+                </h3>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-[#5D3C64] mb-2">
+                    Title
+                  </label>
+
+                  <input
+                    type="text"
+                    value={messageTitle}
+                    onChange={(e) => setMessageTitle(e.target.value)}
+                    placeholder="Enter message title"
+                    maxLength={100}
+                    className="w-full px-4 py-3 border-2 border-[#E5D0E3] rounded-lg focus:outline-none focus:border-[#9F6496]"
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-[#5D3C64] mb-2">
+                    Message
+                  </label>
+
+                  <textarea
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                    placeholder="Enter platform-wide message"
+                    maxLength={1000}
+                    rows={5}
+                    className="w-full px-4 py-3 border-2 border-[#E5D0E3] rounded-lg resize-none focus:outline-none focus:border-[#9F6496]"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="bg-[#7B466A] text-white px-6 py-3 rounded-lg font-bold shadow hover:bg-[#5D3C64] transition-colors"
+                >
+                  Send Message
+                </button>
+              </form>
+
+              {/* Message History */}
+              <div>
+                <h3 className="text-xl font-bold text-[#5D3C64] mb-4">
+                  Message History
+                </h3>
+
+                {loading ? (
+                  <LoadingSpinner />
+                ) : platformMessages.length === 0 ? (
+                  <div className="text-gray-400">
+                    No platform messages yet.
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {platformMessages.map(message => (
+                      <div
+                        key={message._id}
+                        className="bg-white border-2 border-[#D391B0] rounded-2xl p-5 shadow"
+                      >
+                        <h4 className="text-lg font-bold text-[#0C0420]">
+                          {message.title}
+                        </h4>
+
+                        <p className="text-gray-700 mt-2 whitespace-pre-wrap">
+                          {message.message}
+                        </p>
+
+                        <p className="text-sm text-gray-500 mt-3">
+                          Sent: {new Date(message.createdAt).toLocaleString()}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
           {activeTab === 'reports' && (

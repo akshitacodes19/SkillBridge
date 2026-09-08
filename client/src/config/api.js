@@ -18,9 +18,15 @@ api.interceptors.request.use((config) => {
   }
   // Attach adminToken for admin endpoints
   if (
-    config.url.includes('/users/all') ||
-    config.url.includes('/admin')
-  ) {
+  config.url.includes('/users/all') ||
+  config.url.includes('/users/stats') ||
+  config.url.includes('/users/admin/') ||
+  config.url.includes('/users/') && (
+    config.url.includes('/ban') ||
+    config.url.includes('/unban')
+  ) ||
+  config.url.includes('/admin')
+) {
     const adminToken = localStorage.getItem('adminToken');
     if (adminToken) {
       config.headers['Authorization'] = `Bearer ${adminToken}`;
