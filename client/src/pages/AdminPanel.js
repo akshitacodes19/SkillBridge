@@ -40,7 +40,8 @@ const AdminPanel = () => {
     if (
       activeTab === 'skills' ||
       activeTab === 'users' ||
-      activeTab === 'swaps'
+      activeTab === 'swaps' ||
+      activeTab === 'reports'
     ) {
       setLoading(true);
       setError('');
@@ -658,9 +659,82 @@ const AdminPanel = () => {
           )}
           {activeTab === 'reports' && (
             <div className="max-h-[60vh] overflow-y-auto pr-2">
-              <h2 className="text-2xl font-bold mb-4 text-[#5D3C64]">Reports</h2>
-              <p className="text-[#7B466A] mb-4">Download user activity, feedback logs, and swap stats here.</p>
-              {/* Reports content goes here */}
+              <h2 className="text-2xl font-bold mb-4 text-[#5D3C64]">
+                Reports
+              </h2>
+
+              <p className="text-[#7B466A] mb-6">
+                Download reports for individual users.
+              </p>
+
+              <div className="bg-white rounded-lg shadow-sm border border-[#E8DDEB] p-5">
+                <h3 className="text-lg font-semibold text-[#5D3C64] mb-2">
+                  Individual User Report
+                </h3>
+
+                <p className="text-sm text-gray-600 mb-4">
+                  Select a user to download their review and feedback report as a CSV file.
+                </p>
+
+                <div className="space-y-3">
+                  {users.map((user) => (
+                    <div
+                      key={user._id}
+                      className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
+                    >
+                      <div>
+                        <p className="font-medium text-[#5D3C64]">
+                          {user.name}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {user.email}
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={async () => {
+                          try {
+                            const adminToken = localStorage.getItem('adminToken');
+
+                            const response = await api.get(
+                              `/users/${user._id}/reviews/export`,
+                              {
+                                responseType: 'blob',
+                                headers: {
+                                  Authorization: `Bearer ${adminToken}`
+                                }
+                              }
+                            );
+
+                            const blob = new Blob([response.data], {
+                              type: 'text/csv'
+                            });
+
+                            const url = window.URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+
+                            link.href = url;
+                            link.download = `${user.name}-review-report.csv`;
+
+                            document.body.appendChild(link);
+                            link.click();
+                            link.remove();
+
+                            window.URL.revokeObjectURL(url);
+                          } catch (err) {
+                            console.error('Failed to download user report:', err);
+                            console.error('Status:', err.response?.status);
+                            console.error('Response:', err.response?.data);
+                          }
+                        }}
+                        className="px-4 py-2 bg-[#7B466A] text-white rounded-lg hover:bg-[#5D3C64] transition"
+                      >
+                        Download Report
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </div>
