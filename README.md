@@ -1,298 +1,313 @@
-# SkillBridge
+# SkillBridge 🔗
 
-# **Project:** SkillBridge – Skill Exchange Platform
+SkillBridge is a skill-sharing platform that helps users connect with others based on the skills they can teach and the skills they want to learn.
 
-SkillBridge is a modern full-stack web application that allows users to **share skills, discover people with complementary skills, and exchange knowledge through skill swaps**.
-
-Users can create profiles, list the skills they can teach, specify the skills they want to learn, discover other users, and send or manage skill-swap requests.
-
-## ✨ Features
-
-### 👤 User Management
-
-* Secure user registration and login
-* JWT-based authentication
-* Profile creation and editing
-* Optional profile photo uploads
-* Public/private profile settings
-
-### 🧠 Skill Management
-
-* Add skills you can teach
-* Add skills you want to learn
-* Add skill descriptions
-* Specify proficiency and priority levels
-* Set availability preferences
-
-### 🔍 Search & Discovery
-
-* Browse public user profiles
-* Search users by skills
-* Filter users by location
-* Filter users by availability
-
-### 🤝 Skill Swap Management
-
-* Send skill-swap requests
-* Accept or reject requests
-* Cancel pending requests
-* Mark completed swaps
-* View swap history
-
-### ⭐ Rating System
-
-* Rate completed skill swaps
-* Add feedback comments
-* Build user reputation
-* Display average ratings
+Users can discover suitable skill partners, communicate in real time, request skill swaps, and manage their learning connections. An admin panel provides tools for monitoring and managing the platform.
 
 ---
 
-## 🛠️ Tech Stack
+## 🚀 Features
 
-### Frontend
+### 👤 User Features
 
-* React.js
-* React Router
-* Axios
-* React Hook Form
-* React Hot Toast
-* Lucide React
-* Tailwind CSS
+- 🔐 User registration and login
+- 👤 User profile management
+- 🖼️ Profile photo support
+- 🛠️ Add skills you can teach
+- 📚 Add skills you want to learn
+- 🔍 Smart skill matching
+- 🔄 Skill swap requests
+- ⭐ User ratings and reviews
+- 💬 Real-time chat
+- 🔔 Platform messages
+- 📊 User skill information
 
-### Backend
+### 🤝 Smart Matching
 
-* Node.js
-* Express.js
-* MongoDB
-* Mongoose
-* JWT Authentication
-* bcryptjs
-* Multer
-* Express Validator
-* Helmet
-* Express Rate Limit
+SkillBridge provides intelligent skill matching based on:
 
----
+- Skills offered by users
+- Skills wanted by users
+- Mutual skill compatibility
+- Multi-way skill matching
 
-## 📁 Project Structure
+Users can discover potential learning partners instead of manually searching through all users.
 
-```text
-SkillBridge/
-├── server/
-│   ├── models/
-│   ├── routes/
-│   ├── middleware/
-│   ├── index.js
-│   ├── .env-template
-│   └── package.json
-│
-├── client/
-│   ├── public/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── contexts/
-│   │   └── index.js
-│   └── package.json
-│
-├── package.json
-├── .gitignore
-└── README.md
-```
+### 🔄 3-Person Multi-Way Skill Matching
 
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-Make sure you have installed:
-
-* [Node.js](https://nodejs.org/)
-* npm
-* MongoDB Atlas account
-
-### 1. Clone the repository
-
-```bash
-git clone <your-github-repository-url>
-cd SkillBridge
-```
-
-### 2. Install dependencies
-
-Install the root dependencies:
-
-```bash
-npm install
-```
-
-Install backend dependencies:
-
-```bash
-cd server
-npm install
-```
-
-Install frontend dependencies:
-
-```bash
-cd ../client
-npm install
-```
-
-### 3. Configure environment variables
-
-Create a `.env` file inside the `server` folder.
-
-Use `.env-template` as a reference.
-
-```env
-MONGODB_URI=your-mongodb-atlas-connection-string
-JWT_SECRET=your-secret-key
-PORT=5000
-NODE_ENV=development
-```
-
-> **Important:** Never commit your `.env` file to GitHub.
-
-### 4. Run the application
-
-Start the backend from the project root:
-
-```bash
-npm start
-```
-
-The backend runs on:
-
-```text
-http://localhost:5000
-```
-
-In another terminal, start the frontend:
-
-```bash
-cd client
-npm start
-```
-
-The frontend runs on:
-
-```text
-http://localhost:3000
-```
-
----
-
-## 🔄 Application Flow
-
-```text
-Register / Login
-       ↓
-Complete Profile
-       ↓
-Add Skills Offered & Wanted
-       ↓
-Browse / Search Users
-       ↓
-Send Skill Swap Request
-       ↓
-Accept / Reject Request
-       ↓
-Complete Skill Swap
-       ↓
-Rate & Review
-```
-
----
-
-## 🔐 Security
-
-SkillBridge uses:
-
-* JWT authentication
-* Password hashing with bcryptjs
-* Input validation
-* Helmet security headers
-* Rate limiting
-* Environment variables for sensitive configuration
-
----
-
-## 📌 API Overview
-
-### Authentication
-
-```text
-POST /api/auth/register
-POST /api/auth/login
-GET  /api/auth/me
-```
-
-### Users
-
-```text
-GET    /api/users/browse
-GET    /api/users/search
-GET    /api/users/:id
-PUT    /api/users/profile
-POST   /api/users/profile-photo
-POST   /api/users/skills-offered
-POST   /api/users/skills-wanted
-DELETE /api/users/skills-offered/:id
-DELETE /api/users/skills-wanted/:id
-```
-
-### Skill Swaps
-
-```text
-POST /api/swaps
-GET  /api/swaps/my-swaps
-GET  /api/swaps/:id
-PUT  /api/swaps/:id/accept
-PUT  /api/swaps/:id/reject
-PUT  /api/swaps/:id/complete
-PUT  /api/swaps/:id/cancel
-POST /api/swaps/:id/rate
-```
-
-### Skills
-
-```text
-GET /api/skills/popular
-GET /api/skills/suggestions
-```
-
----
-
-## 🎯 Use Case
-
-SkillBridge helps people learn from one another without requiring traditional paid courses.
+SkillBridge supports multi-way skill exchanges involving three users.
 
 For example:
 
-> A user who knows Python can connect with someone who knows Java and exchange their knowledge through a skill swap.
+```text
+User A teaches → User B
+User B teaches → User C
+User C teaches → User A
 
-This creates a community-driven environment where users can **teach what they know and learn what they need**.
+This allows users to participate in skill exchanges even when a direct two-person match is not available.
 
----
+💬 Real-Time Chat
 
-## 📈 Future Improvements
+Users can communicate with their skill partners through real-time messaging.
 
-Possible future enhancements include:
+Features include:
 
-* Real-time chat between matched users
-* Notifications
-* Advanced recommendation system
-* AI-powered skill matching
-* Video meeting integration
-* Achievement and badge system
-* Improved analytics dashboard
+Real-time messages
+Chat interface
+Conversation history
+Socket.IO based communication
+🔁 Skill Swaps
 
----
+Users can request skill exchanges with other users.
 
-## 📄 License
+A swap can contain:
 
-This project is intended for educational and portfolio purposes.
+Skill offered
+Skill requested
+Recipient
+Optional message
+Swap status
+Creation date
+🛡️ Admin Panel
+
+SkillBridge includes a dedicated admin panel for platform management.
+
+🔐 Admin Authentication
+Separate admin login
+JWT-based authentication
+Protected admin routes
+Admin-only backend APIs
+📊 Dashboard Statistics
+
+The admin dashboard provides platform statistics such as:
+
+Total users
+Active users
+Banned users
+Total skills
+Total skill swaps
+Average user rating
+👥 User Management
+
+Admins can:
+
+View all users
+View user information
+Monitor account status
+Ban users
+Unban users
+
+Banned users are prevented from logging into the platform.
+
+🛠️ Skill Moderation
+
+Admins can review user skills and remove inappropriate or unwanted skills.
+
+Supports moderation of:
+
+Skills offered
+Skills wanted
+🔄 Swap Monitoring
+
+Admins can monitor skill swaps across the platform.
+
+The admin can view:
+
+Requester
+Recipient
+Offered skill
+Requested skill
+Swap status
+Optional message
+Creation date
+📢 Platform Messages
+
+Admins can send platform-wide messages to users.
+
+Each message contains:
+
+Title
+Message content
+Creation date
+
+Users can view platform messages through the application.
+
+📄 Individual User Reports
+
+Admins can download individual user review and feedback reports as CSV files.
+
+Reports can include:
+
+Reviewer name
+Reviewer email
+Rating
+Comment
+Review date
+Helpful votes
+Not helpful votes
+Verification status
+User response
+Response date
+🧰 Tech Stack
+Frontend
+React.js
+React Router
+Tailwind CSS
+Axios
+Socket.IO Client
+Backend
+Node.js
+Express.js
+MongoDB
+Mongoose
+Socket.IO
+JSON Web Tokens (JWT)
+📁 Project Structure
+SkillBridge/
+│
+├── client/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   │   ├── AdminLogin.js
+│   │   │   ├── AdminPanel.js
+│   │   │   ├── Chat.js
+│   │   │   ├── CycleMatches.js
+│   │   │   ├── Swaps.js
+│   │   │   └── smartmatches.js
+│   │   ├── config/
+│   │   │   └── api.js
+│   │   └── App.js
+│   │
+│   └── package.json
+│
+├── server/
+│   ├── models/
+│   │   ├── User.js
+│   │   ├── ChatMessage.js
+│   │   └── PlatformMessage.js
+│   │
+│   ├── routes/
+│   │   ├── auth.js
+│   │   ├── chat.js
+│   │   ├── cycles.js
+│   │   ├── matching.js
+│   │   ├── platformMessages.js
+│   │   ├── swaps.js
+│   │   └── users.js
+│   │
+│   ├── middleware/
+│   │   └── auth.js
+│   │
+│   └── index.js
+│
+└── README.md
+⚙️ Installation
+1. Clone the repository
+git clone https://github.com/akshitacodes19/SkillBridge.git
+2. Navigate into the project
+cd SkillBridge
+3. Install frontend dependencies
+cd client
+npm install
+4. Install backend dependencies
+cd ../server
+npm install
+🔑 Environment Variables
+
+Create the required environment files for the frontend and backend.
+
+Example backend configuration:
+
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+PORT=5000
+
+Configure the frontend API URL according to your local environment.
+
+▶️ Running the Application
+Start the backend
+cd server
+npm start
+
+Backend:
+
+http://localhost:5000
+Start the frontend
+
+Open another terminal:
+
+cd client
+npm start
+
+Frontend:
+
+http://localhost:3000
+🔐 Admin Access
+
+The application contains a separate admin login and protected admin dashboard.
+
+Admin routes include:
+
+/admin/login
+/admin
+
+Administrative operations are protected using authentication and admin authorization middleware.
+
+🔄 Main SkillBridge Workflow
+Register / Login
+       ↓
+Create Profile
+       ↓
+Add Skills Offered
+       ↓
+Add Skills Wanted
+       ↓
+Find Skill Matches
+       ↓
+Connect With Users
+       ↓
+Chat in Real Time
+       ↓
+Request Skill Swap
+       ↓
+Complete Skill Exchange
+       ↓
+Rate / Review User
+🛡️ Security
+
+SkillBridge uses:
+
+JWT authentication
+Protected API routes
+Admin authorization
+Banned-user protection
+Authenticated real-time communication
+Protected administrative operations
+🌟 Project Highlights
+
+SkillBridge combines:
+
+Skill Discovery + Smart Matching + Multi-Way Exchanges + Real-Time Communication + Skill Swaps + Reviews + Administration
+
+The goal is to create a platform where users can learn from each other by exchanging knowledge and skills.
+
+👩‍💻 Author
+
+Akshita
+
+GitHub:
+
+https://github.com/akshitacodes19
+
+📌 Future Enhancements
+
+Possible future improvements include:
+
+Email notifications
+Advanced recommendation algorithms
+Skill verification
+Improved reporting and analytics
+Notifications for swap requests
+Enhanced user discovery
+More detailed admin analytics
