@@ -210,11 +210,13 @@ cd SkillBridge
 3. Install frontend dependencies
 
 cd client
+
 npm install
 
 4. Install backend dependencies
 
 cd ../server
+
 npm install
 
 🔑 Environment Variables
@@ -224,26 +226,30 @@ Create the required environment files for the frontend and backend.
 Example backend configuration:
 
 MONGO_URI=your_mongodb_connection_string
+
 JWT_SECRET=your_jwt_secret
+
 PORT=5000
 
 Configure the frontend API URL according to your local environment.
 
 ▶️ Running the Application
-Start the backend
+Start the Backend
 
 cd server
+
 npm start
 
 Backend:
 
 http://localhost:5000
 
-Start the frontend
+Start the Frontend
 
 Open another terminal:
 
 cd client
+
 npm start
 
 Frontend:
@@ -257,6 +263,7 @@ The application contains a separate admin login and protected admin dashboard.
 Admin routes include:
 
 /admin/login
+
 /admin
 
 Administrative operations are protected using authentication and admin authorization middleware.
@@ -264,23 +271,41 @@ Administrative operations are protected using authentication and admin authoriza
 🔄 Main SkillBridge Workflow
 
 Register / Login
+
 ↓
+
 Create Profile
+
 ↓
+
 Add Skills Offered
+
 ↓
+
 Add Skills Wanted
+
 ↓
+
 Find Skill Matches
+
 ↓
+
 Connect With Users
+
 ↓
+
 Chat in Real Time
+
 ↓
+
 Request Skill Swap
+
 ↓
+
 Complete Skill Exchange
+
 ↓
+
 Rate / Review User
 
 🛡️ Security
